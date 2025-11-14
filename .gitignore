@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+*.log
+*.tmp
+.eval_cache/
+eval_report.jsonl
+eval_report.csv
+# reports (artifacts)
+reports/*.jsonl
+reports/*.csv
+reports/*.html
