@@ -28,15 +28,16 @@ def concat_citations_text(answer_json: dict) -> str:
     return " ".join(c.get("quote", "") for c in answer_json.get("citations", []))
 
 
-def main(
-    out_jsonl: str | None = None,
-    out_csv: str | None = None,
-    top_k: int = 3,
-    out_dir: str | None = None,
-) -> None:
+def main(out_jsonl: str | None = None,
+         out_csv: str | None = None,
+         top_k: int = 3,
+         out_dir: str | None = None) -> None:
     # resolve output directory and filenames
-    out_dir = out_dir or PROJECT_ROOT
+-   out_dir = out_dir or PROJECT_ROOT
++   # If not provided, default to current working directory (friendlier for tests)
++   out_dir = out_dir or os.getcwd()
     os.makedirs(out_dir, exist_ok=True)
+
 
     out_jsonl = out_jsonl or "eval_report.jsonl"
     out_csv = out_csv or "eval_report.csv"
