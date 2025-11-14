@@ -1,0 +1,9 @@
+{
+  "question_id": "qXX",
+  "claim": "Short, clinically scoped statement tied to retrieved evidence.",
+  "citations": [
+    { "doc_id": "genomics_oncokb_excerpt.md", "quote": "exact quote span", "char_span": [120, 160] }
+  ],
+  "guideline_refs": [],
+  "confidence": 0.50
+}
