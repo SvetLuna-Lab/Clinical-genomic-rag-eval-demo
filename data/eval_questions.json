@@ -1,0 +1,23 @@
+[
+  {
+    "id": "q01",
+    "question": "what is the clinical significance of braf v600e in metastatic melanoma cite source lines",
+    "expected_keywords": ["braf v600e", "melanoma", "oncogenic driver", "targeted therapy"],
+    "must_be_grounded_in": ["genomics_oncokb_excerpt.md", "pubmed_abstract_001.md"],
+    "answer_format": "json_template_v1"
+  },
+  {
+    "id": "q02",
+    "question": "summarize initial plan for braf v600e positive metastatic melanoma cite doc and quote",
+    "expected_keywords": ["initiate", "targeted therapy", "monitor toxicity", "response"],
+    "must_be_grounded_in": ["clin_note_001.md"],
+    "answer_format": "json_template_v1"
+  },
+  {
+    "id": "q03",
+    "question": "does the pathology confirm braf v600e in this case cite source lines",
+    "expected_keywords": ["pathology", "braf v600e", "confirmed", "detected"],
+    "must_be_grounded_in": ["clin_note_001.md"],
+    "answer_format": "json_template_v1"
+  }
+]
