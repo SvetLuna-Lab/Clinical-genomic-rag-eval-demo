@@ -1,4 +1,6 @@
 # Clinical-genomic-rag-eval-demo
+[![CI](https://github.com/SvetLuna-Lab/clinical-genomic-rag-eval-demo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SvetLuna-Lab/clinical-genomic-rag-eval-demo/actions/workflows/ci.yml)
+
 
 Clinical + Genomic **RAG evaluation** on de-identified synthetic data with transparent grounding and reproducible metrics.  
 Python **3.10+**. No runtime deps beyond the standard library (tests use `pytest`).
@@ -136,11 +138,10 @@ Add guideline-aware boosts (e.g., NCCN/ESMO) and section weighting.
 Promote CI to publish report.html as a build artifact or Pages.
 
 
-Versioning
+## Versioning
 
-We follow Semantic Versioning. See CHANGELOG.md
-.
-Initial release: v0.1.0.
+We follow Semantic Versioning. See [CHANGELOG.md](./CHANGELOG.md).  
+Initial release: **v0.1.0**.
 
 
 License
