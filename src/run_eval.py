@@ -1,7 +1,8 @@
+# src/run_eval.py
+import argparse
 import csv
 import json
 import os
-import argparse
 from typing import Any, Dict, List, Set
 
 from .pipeline import Pipeline
@@ -25,19 +26,21 @@ def load_questions(path: str) -> List[Dict[str, Any]]:
 
 
 def concat_citations_text(answer_json: dict) -> str:
+    """Join citation quotes into one text for overlap checks."""
     return " ".join(c.get("quote", "") for c in answer_json.get("citations", []))
 
 
-def main(out_jsonl: str | None = None,
-         out_csv: str | None = None,
-         top_k: int = 3,
-         out_dir: str | None = None) -> None:
-    # resolve output directory and filenames
--   out_dir = out_dir or PROJECT_ROOT
-+   # If not provided, default to current working directory (friendlier for tests)
-+   out_dir = out_dir or os.getcwd()
+def main(
+    out_jsonl: str | None = None,
+    out_csv: str | None = None,
+    top_k: int = 3,
+    out_dir: str | None = None,
+) -> None:
+    """Run evaluation and write artifacts."""
+    # Default to *current working directory* if out_dir is not provided.
+    # This makes tests that chdir() into a tmp folder succeed.
+    out_dir = out_dir or os.getcwd()
     os.makedirs(out_dir, exist_ok=True)
-
 
     out_jsonl = out_jsonl or "eval_report.jsonl"
     out_csv = out_csv or "eval_report.csv"
@@ -45,14 +48,13 @@ def main(out_jsonl: str | None = None,
     out_jsonl_path = os.path.join(out_dir, out_jsonl)
     out_csv_path = os.path.join(out_dir, out_csv)
 
-    # load and run
-    qs = load_questions(QUESTIONS_PATH)
+    questions = load_questions(QUESTIONS_PATH)
     pipe = Pipeline(corpus_dir=CORPUS_DIR)
 
     rows_csv: List[Dict[str, Any]] = []
 
     with open(out_jsonl_path, "w", encoding="utf-8") as jf:
-        for q in qs:
+        for q in questions:
             qid = q["id"]
             question = q["question"]
             expected = q.get("expected_keywords", [])
@@ -95,10 +97,11 @@ def main(out_jsonl: str | None = None,
                 }
             )
 
+    # CSV summary (per question)
     with open(out_csv_path, "w", newline="", encoding="utf-8") as cf:
-        w = csv.DictWriter(cf, fieldnames=list(rows_csv[0].keys()))
-        w.writeheader()
-        w.writerows(rows_csv)
+        writer = csv.DictWriter(cf, fieldnames=list(rows_csv[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows_csv)
 
     print("=== Clinical+Genomic RAG evaluation complete ===")
     print(f"JSONL: {out_jsonl_path}")
@@ -107,11 +110,10 @@ def main(out_jsonl: str | None = None,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out_dir", type=str, default=None, help="Output directory (default: repo root).")
+    parser.add_argument("--out_dir", type=str, default=None, help="Output directory (default: CWD).")
     parser.add_argument("--out_jsonl", type=str, default=None, help="Output JSONL filename (default: eval_report.jsonl).")
     parser.add_argument("--out_csv", type=str, default=None, help="Output CSV filename (default: eval_report.csv).")
     parser.add_argument("--top_k", type=int, default=3, help="Top-k documents to retrieve.")
     args = parser.parse_args()
 
     main(out_jsonl=args.out_jsonl, out_csv=args.out_csv, top_k=args.top_k, out_dir=args.out_dir)
-
