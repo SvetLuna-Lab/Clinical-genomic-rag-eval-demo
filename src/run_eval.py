@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import argparse
 from typing import Any, Dict, List, Set
 
 from .pipeline import Pipeline
@@ -17,20 +18,37 @@ DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 CORPUS_DIR = os.path.join(DATA_DIR, "corpus")
 QUESTIONS_PATH = os.path.join(DATA_DIR, "eval_questions.json")
 
+
 def load_questions(path: str) -> List[Dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def concat_citations_text(answer_json: dict) -> str:
     return " ".join(c.get("quote", "") for c in answer_json.get("citations", []))
 
-def main(out_jsonl: str = "eval_report.jsonl", out_csv: str = "eval_report.csv", top_k: int = 3) -> None:
+
+def main(
+    out_jsonl: str | None = None,
+    out_csv: str | None = None,
+    top_k: int = 3,
+    out_dir: str | None = None,
+) -> None:
+    # resolve output directory and filenames
+    out_dir = out_dir or PROJECT_ROOT
+    os.makedirs(out_dir, exist_ok=True)
+
+    out_jsonl = out_jsonl or "eval_report.jsonl"
+    out_csv = out_csv or "eval_report.csv"
+
+    out_jsonl_path = os.path.join(out_dir, out_jsonl)
+    out_csv_path = os.path.join(out_dir, out_csv)
+
+    # load and run
     qs = load_questions(QUESTIONS_PATH)
     pipe = Pipeline(corpus_dir=CORPUS_DIR)
 
     rows_csv: List[Dict[str, Any]] = []
-    out_jsonl_path = os.path.join(PROJECT_ROOT, out_jsonl)
-    out_csv_path = os.path.join(PROJECT_ROOT, out_csv)
 
     with open(out_jsonl_path, "w", encoding="utf-8") as jf:
         for q in qs:
@@ -60,19 +78,21 @@ def main(out_jsonl: str = "eval_report.jsonl", out_csv: str = "eval_report.csv",
                     "citation_recall": citrec,
                     "keyword_coverage": cov,
                     "context_overlap": ovlp,
-                    "faithfulness_stub": faith
-                }
+                    "faithfulness_stub": faith,
+                },
             }
             jf.write(json.dumps(record, ensure_ascii=False) + "\n")
 
-            rows_csv.append({
-                "id": qid,
-                "hit@k": hitk,
-                "citation_recall": citrec,
-                "keyword_coverage": cov,
-                "context_overlap": ovlp,
-                "faithfulness_stub": faith
-            })
+            rows_csv.append(
+                {
+                    "id": qid,
+                    "hit@k": hitk,
+                    "citation_recall": citrec,
+                    "keyword_coverage": cov,
+                    "context_overlap": ovlp,
+                    "faithfulness_stub": faith,
+                }
+            )
 
     with open(out_csv_path, "w", newline="", encoding="utf-8") as cf:
         w = csv.DictWriter(cf, fieldnames=list(rows_csv[0].keys()))
@@ -83,5 +103,14 @@ def main(out_jsonl: str = "eval_report.jsonl", out_csv: str = "eval_report.csv",
     print(f"JSONL: {out_jsonl_path}")
     print(f"CSV:   {out_csv_path}")
 
+
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out_dir", type=str, default=None, help="Output directory (default: repo root).")
+    parser.add_argument("--out_jsonl", type=str, default=None, help="Output JSONL filename (default: eval_report.jsonl).")
+    parser.add_argument("--out_csv", type=str, default=None, help="Output CSV filename (default: eval_report.csv).")
+    parser.add_argument("--top_k", type=int, default=3, help="Top-k documents to retrieve.")
+    args = parser.parse_args()
+
+    main(out_jsonl=args.out_jsonl, out_csv=args.out_csv, top_k=args.top_k, out_dir=args.out_dir)
+
